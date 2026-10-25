@@ -1,0 +1,3222 @@
+<!DOCTYPE html>
+<html>
+<head>
+    
+    <meta http-equiv="content-type" content="text/html; charset=UTF-8" />
+    <script src="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.js"></script>
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.js"></script>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/leaflet@1.9.3/dist/leaflet.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.2/dist/css/bootstrap.min.css"/>
+    <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/bootstrap/3.0.0/css/bootstrap-glyphicons.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@fortawesome/fontawesome-free@6.2.0/css/all.min.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/Leaflet.awesome-markers/2.0.2/leaflet.awesome-markers.css"/>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/gh/python-visualization/folium/folium/templates/leaflet.awesome.rotate.min.css"/>
+    
+            <meta name="viewport" content="width=device-width,
+                initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+            <style>
+                #map_1dc9c3985caf677f5b91550906c5547e {
+                    position: relative;
+                    width: 100.0%;
+                    height: 100.0%;
+                    left: 0.0%;
+                    top: 0.0%;
+                }
+                .leaflet-container { font-size: 1rem; }
+            </style>
+
+            <style>html, body {
+                width: 100%;
+                height: 100%;
+                margin: 0;
+                padding: 0;
+            }
+            </style>
+
+            <style>#map {
+                position:absolute;
+                top:0;
+                bottom:0;
+                right:0;
+                left:0;
+                }
+            </style>
+
+            <script>
+                L_NO_TOUCH = false;
+                L_DISABLE_3D = false;
+            </script>
+
+        
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/leaflet.markercluster.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.css"/>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/leaflet.markercluster/1.1.0/MarkerCluster.Default.css"/>
+</head>
+<body>
+    
+    <div id='pos-controls' style='position:fixed;top:12px;right:12px;z-index:9999;background:white;border:1px solid #ddd;border-radius:9px;padding:12px;width:min(275px,calc(100vw - 44px));box-shadow:0 3px 14px #0002;font:14px Arial;direction:rtl'><b>خريطة نقاط البيع</b><div style='margin:7px 0'>Ahmed Ali Sayed Saad</div><div id='pos-status' aria-live='polite' style='font-size:12px'>جاري طلب موقعك تلقائيًا...</div><button id='pos-retry' style='display:none;margin-top:8px;padding:8px'>إعادة محاولة تحديد الموقع</button></div>
+    
+            <div class="folium-map" id="map_1dc9c3985caf677f5b91550906c5547e" ></div>
+        
+</body>
+<script>
+    
+    (function(){
+      const map = map_1dc9c3985caf677f5b91550906c5547e;
+      const status = document.getElementById('pos-status');
+      const retry = document.getElementById('pos-retry');
+      let ownMarker = null, accuracyCircle = null, watchId = null;
+      let firstFix = true;
+      function message(value){ status.textContent = value; }
+      function update(position){
+        const lat = position.coords.latitude, lon = position.coords.longitude;
+        const accuracy = position.coords.accuracy || 0;
+        if(!ownMarker){
+          ownMarker = L.circleMarker([lat,lon], {radius:9,color:'#fff',weight:3,
+              fillColor:'#1677ff',fillOpacity:1}).addTo(map).bindPopup('موقعك الحالي');
+          accuracyCircle = L.circle([lat,lon], {radius:accuracy,color:'#1677ff',
+              weight:1,fillOpacity:0.08,interactive:false}).addTo(map);
+        }else{
+          ownMarker.setLatLng([lat,lon]);
+          accuracyCircle.setLatLng([lat,lon]);
+          accuracyCircle.setRadius(accuracy);
+        }
+        if(firstFix){ map.setView([lat,lon], Math.max(map.getZoom(),14)); firstFix=false; }
+        retry.style.display='none';
+        message('تم تحديد موقعك تلقائيًا — الدقة التقريبية: '+Math.round(accuracy)+' متر.');
+      }
+      function failed(error){
+        const msg = error.code === 1 ? 'صلاحية الموقع مرفوضة. اسمح بها من إعدادات المتصفح.' :
+          error.code === 2 ? 'الموقع غير متاح. تأكد من تفعيل GPS وخدمات الموقع.' :
+          'انتهت مهلة تحديد الموقع. حاول مرة أخرى.';
+        message(msg); retry.style.display='inline-block';
+      }
+      function start(){
+        if(!navigator.geolocation){message('المتصفح لا يدعم تحديد الموقع.');return;}
+        if(!window.isSecureContext){message('افتح رابط GitHub Pages باستخدام HTTPS لتفعيل الموقع.');return;}
+        retry.style.display='none';message('جاري تحديد موقعك تلقائيًا...');
+        if(watchId !== null)navigator.geolocation.clearWatch(watchId);
+        watchId=navigator.geolocation.watchPosition(update,failed,
+          {enableHighAccuracy:true,timeout:20000,maximumAge:10000});
+      }
+      retry.addEventListener('click',start);
+      start();
+    })();
+    
+            var map_1dc9c3985caf677f5b91550906c5547e = L.map(
+                "map_1dc9c3985caf677f5b91550906c5547e",
+                {
+                    center: [31.165104871584152, 29.90998995706941],
+                    crs: L.CRS.EPSG3857,
+                    ...{
+  "zoom": 11,
+  "zoomControl": true,
+  "preferCanvas": false,
+}
+
+                }
+            );
+            L.control.scale().addTo(map_1dc9c3985caf677f5b91550906c5547e);
+
+            
+
+        
+    
+            var tile_layer_b64c97d7e9dcb6043f781bcbb1ced79f = L.tileLayer(
+                "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
+                {
+  "minZoom": 0,
+  "maxZoom": 19,
+  "maxNativeZoom": 19,
+  "noWrap": false,
+  "attribution": "\u0026copy; \u003ca href=\"https://www.openstreetmap.org/copyright\"\u003eOpenStreetMap\u003c/a\u003e contributors",
+  "subdomains": "abc",
+  "detectRetina": false,
+  "tms": false,
+  "opacity": 1,
+}
+
+            );
+        
+    
+            tile_layer_b64c97d7e9dcb6043f781bcbb1ced79f.addTo(map_1dc9c3985caf677f5b91550906c5547e);
+        
+    
+            var marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9 = L.markerClusterGroup(
+                {
+}
+            );
+        
+    
+            var marker_2203ff71691908523328bb819812f2d8 = L.marker(
+                [31.1852, 29.90355],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_810280ce55677893d40378cb9d82c18a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_87098e8485aa1b76915c57b3bfd4f37e = $(`<div id="html_87098e8485aa1b76915c57b3bfd4f37e" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ماركت زهرة الياسمين</b><br>كود التاجر: 1848073198<br>شارع اليعقوبي الباب الجديد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.1852,29.90355&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_810280ce55677893d40378cb9d82c18a.setContent(html_87098e8485aa1b76915c57b3bfd4f37e);
+            
+        
+
+        marker_2203ff71691908523328bb819812f2d8.bindPopup(popup_810280ce55677893d40378cb9d82c18a)
+        ;
+
+        
+    
+    
+            marker_2203ff71691908523328bb819812f2d8.bindTooltip(
+                `<div>
+                     1848073198
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_1ee955692d8e9fb60edf9916c136b555 = L.marker(
+                [31.185112, 29.903871],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_dd761937c0b43fdeb1a47b997aad3b98 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_d372d0aebfea6e8adee38cd723e89a40 = $(`<div id="html_d372d0aebfea6e8adee38cd723e89a40" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بازار رمضان</b><br>كود التاجر: 1491993861<br>الاقحوان راغب باشا كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.185112,29.903871&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_dd761937c0b43fdeb1a47b997aad3b98.setContent(html_d372d0aebfea6e8adee38cd723e89a40);
+            
+        
+
+        marker_1ee955692d8e9fb60edf9916c136b555.bindPopup(popup_dd761937c0b43fdeb1a47b997aad3b98)
+        ;
+
+        
+    
+    
+            marker_1ee955692d8e9fb60edf9916c136b555.bindTooltip(
+                `<div>
+                     1491993861
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_e6017ab7ad4160335f7f41007fd88d4a = L.marker(
+                [31.188649, 29.902553],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_3e4431c60a498e01bd11cac38604354a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_6f430c1043e942002e5f624cd3e6882b = $(`<div id="html_6f430c1043e942002e5f624cd3e6882b" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ام يوسف</b><br>كود التاجر: 6276256552<br>6شارع الشيخ سلامة حجازي محرم ب<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.188649,29.902553&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_3e4431c60a498e01bd11cac38604354a.setContent(html_6f430c1043e942002e5f624cd3e6882b);
+            
+        
+
+        marker_e6017ab7ad4160335f7f41007fd88d4a.bindPopup(popup_3e4431c60a498e01bd11cac38604354a)
+        ;
+
+        
+    
+    
+            marker_e6017ab7ad4160335f7f41007fd88d4a.bindTooltip(
+                `<div>
+                     6276256552
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_f7d3fb8e596bb6e515da88933545cf26 = L.marker(
+                [31.18441, 29.901102],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_728fbd24f8b1e60ac74b05cdb008e6d0 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_1d3778a1320579c91a403e01a7ba3a00 = $(`<div id="html_1d3778a1320579c91a403e01a7ba3a00" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>عمرو الحظ</b><br>كود التاجر: 7963055743<br>شارع جبل نعسه كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18441,29.901102&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_728fbd24f8b1e60ac74b05cdb008e6d0.setContent(html_1d3778a1320579c91a403e01a7ba3a00);
+            
+        
+
+        marker_f7d3fb8e596bb6e515da88933545cf26.bindPopup(popup_728fbd24f8b1e60ac74b05cdb008e6d0)
+        ;
+
+        
+    
+    
+            marker_f7d3fb8e596bb6e515da88933545cf26.bindTooltip(
+                `<div>
+                     7963055743
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_7918df5ade0494d9bc556febd3990ba6 = L.marker(
+                [31.18965, 29.909423],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_6d87fb3beeaf77b05dabfd4b7e6ed066 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_070dae006079e3462c8fc7e2529ff72b = $(`<div id="html_070dae006079e3462c8fc7e2529ff72b" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ابو زياد</b><br>كود التاجر: 4004880064<br>شارع الاسكندراني محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18965,29.909423&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_6d87fb3beeaf77b05dabfd4b7e6ed066.setContent(html_070dae006079e3462c8fc7e2529ff72b);
+            
+        
+
+        marker_7918df5ade0494d9bc556febd3990ba6.bindPopup(popup_6d87fb3beeaf77b05dabfd4b7e6ed066)
+        ;
+
+        
+    
+    
+            marker_7918df5ade0494d9bc556febd3990ba6.bindTooltip(
+                `<div>
+                     4004880064
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_3d5e615b44963b5d8775c6e1606b5af3 = L.marker(
+                [31.182332, 29.905002],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_d98bdaf4612d5bc6ecb90087f9df850e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_710e6d0de1957217e444cade99178af9 = $(`<div id="html_710e6d0de1957217e444cade99178af9" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الشامي فون</b><br>كود التاجر: 8476301695<br>شارع راغب باشا كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.182332,29.905002&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_d98bdaf4612d5bc6ecb90087f9df850e.setContent(html_710e6d0de1957217e444cade99178af9);
+            
+        
+
+        marker_3d5e615b44963b5d8775c6e1606b5af3.bindPopup(popup_d98bdaf4612d5bc6ecb90087f9df850e)
+        ;
+
+        
+    
+    
+            marker_3d5e615b44963b5d8775c6e1606b5af3.bindTooltip(
+                `<div>
+                     8476301695
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_1c5c11586bab2d17e2b5456450e3c702 = L.marker(
+                [31.18990874, 29.90401551],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_f3a7c20fbd02959a5e5a9c2b62167f43 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_a854ed569811f0833dc7cccf4d5e8fd4 = $(`<div id="html_a854ed569811f0833dc7cccf4d5e8fd4" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الشروق</b><br>كود التاجر: 2639264750<br>شارع بن الخطاب محطة مصر<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18990874,29.90401551&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_f3a7c20fbd02959a5e5a9c2b62167f43.setContent(html_a854ed569811f0833dc7cccf4d5e8fd4);
+            
+        
+
+        marker_1c5c11586bab2d17e2b5456450e3c702.bindPopup(popup_f3a7c20fbd02959a5e5a9c2b62167f43)
+        ;
+
+        
+    
+    
+            marker_1c5c11586bab2d17e2b5456450e3c702.bindTooltip(
+                `<div>
+                     2639264750
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_2b9badb41a1c1f85393b5fe8195c8967 = L.marker(
+                [30.000083, 30.999564],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_f23b83a3671ce7ec57d1b9afc70c2589 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_0a075164b8ec001b8ff22235a933e074 = $(`<div id="html_0a075164b8ec001b8ff22235a933e074" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>اسكرينه</b><br>كود التاجر: 2628458589<br>12شارع النيل كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=30.000083,30.999564&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_f23b83a3671ce7ec57d1b9afc70c2589.setContent(html_0a075164b8ec001b8ff22235a933e074);
+            
+        
+
+        marker_2b9badb41a1c1f85393b5fe8195c8967.bindPopup(popup_f23b83a3671ce7ec57d1b9afc70c2589)
+        ;
+
+        
+    
+    
+            marker_2b9badb41a1c1f85393b5fe8195c8967.bindTooltip(
+                `<div>
+                     2628458589
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_7f4636acd8dec6a11e67f8bc47d00a67 = L.marker(
+                [31.18694343, 29.90861715],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_e30bd3a7a6071916e4a6796e05423c2a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_8addaa63988236dad502f1a965b4067f = $(`<div id="html_8addaa63988236dad502f1a965b4067f" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>أورجنال</b><br>كود التاجر: 3418595554<br>محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18694343,29.90861715&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_e30bd3a7a6071916e4a6796e05423c2a.setContent(html_8addaa63988236dad502f1a965b4067f);
+            
+        
+
+        marker_7f4636acd8dec6a11e67f8bc47d00a67.bindPopup(popup_e30bd3a7a6071916e4a6796e05423c2a)
+        ;
+
+        
+    
+    
+            marker_7f4636acd8dec6a11e67f8bc47d00a67.bindTooltip(
+                `<div>
+                     3418595554
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_9c6287188ca59d95fcf7bbbb6793c152 = L.marker(
+                [31.18629984924048, 29.906691882913467],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_8535820e229be8e821335302deef437b = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c396b4456d52be5c870e94381386cae2 = $(`<div id="html_c396b4456d52be5c870e94381386cae2" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>البان الشاطبى</b><br>كود التاجر: 6704608610<br>الشاطبى<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18629984924048,29.906691882913467&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_8535820e229be8e821335302deef437b.setContent(html_c396b4456d52be5c870e94381386cae2);
+            
+        
+
+        marker_9c6287188ca59d95fcf7bbbb6793c152.bindPopup(popup_8535820e229be8e821335302deef437b)
+        ;
+
+        
+    
+    
+            marker_9c6287188ca59d95fcf7bbbb6793c152.bindTooltip(
+                `<div>
+                     6704608610
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_5f4787f9dadf588224477512990bb57c = L.marker(
+                [31.06870816, 29.83071668],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_684c5d8c1e2bbc2e0a9b046d1731f9db = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_f7103c518155a3ed5247dbba9ed18933 = $(`<div id="html_f7103c518155a3ed5247dbba9ed18933" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محل عم حسن</b><br>كود التاجر: 8029147652<br>مساكن المدينة الجامعية<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.06870816,29.83071668&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_684c5d8c1e2bbc2e0a9b046d1731f9db.setContent(html_f7103c518155a3ed5247dbba9ed18933);
+            
+        
+
+        marker_5f4787f9dadf588224477512990bb57c.bindPopup(popup_684c5d8c1e2bbc2e0a9b046d1731f9db)
+        ;
+
+        
+    
+    
+            marker_5f4787f9dadf588224477512990bb57c.bindTooltip(
+                `<div>
+                     8029147652
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_dc1ed69ed4625d0dd5f6beeda8d650d3 = L.marker(
+                [31.18736, 29.901263],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_620becd1db3c1cdf6c9f2b978d17069c = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_46ae8f5c1e7878d4828dbcae006ef40a = $(`<div id="html_46ae8f5c1e7878d4828dbcae006ef40a" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محل اسامة</b><br>كود التاجر: 4066164186<br>شارع راغب باشا محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18736,29.901263&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_620becd1db3c1cdf6c9f2b978d17069c.setContent(html_46ae8f5c1e7878d4828dbcae006ef40a);
+            
+        
+
+        marker_dc1ed69ed4625d0dd5f6beeda8d650d3.bindPopup(popup_620becd1db3c1cdf6c9f2b978d17069c)
+        ;
+
+        
+    
+    
+            marker_dc1ed69ed4625d0dd5f6beeda8d650d3.bindTooltip(
+                `<div>
+                     4066164186
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_57251fcdeaad552bcb3eed4c883eabfa = L.marker(
+                [31.18781139, 29.9009633],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_7ea588e953ba4c81d90481fadd8c03df = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_3fcdac329afda8fdebcafcea28ce4ed1 = $(`<div id="html_3fcdac329afda8fdebcafcea28ce4ed1" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الاستاذ</b><br>كود التاجر: 4386169389<br>43 شارع مسجد سلطان كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18781139,29.9009633&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_7ea588e953ba4c81d90481fadd8c03df.setContent(html_3fcdac329afda8fdebcafcea28ce4ed1);
+            
+        
+
+        marker_57251fcdeaad552bcb3eed4c883eabfa.bindPopup(popup_7ea588e953ba4c81d90481fadd8c03df)
+        ;
+
+        
+    
+    
+            marker_57251fcdeaad552bcb3eed4c883eabfa.bindTooltip(
+                `<div>
+                     4386169389
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_b05463459456ab4e1b93e5d2b5f974a5 = L.marker(
+                [31.06853, 29.830728],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_d93b849d5a64d031dcf1ad177ec28704 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_aa583786b88bca1b85e7c7719eb70ea5 = $(`<div id="html_aa583786b88bca1b85e7c7719eb70ea5" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ابو اميرة</b><br>كود التاجر: 9542182602<br>طريق مصر الصحراوي مرغم<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.06853,29.830728&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_d93b849d5a64d031dcf1ad177ec28704.setContent(html_aa583786b88bca1b85e7c7719eb70ea5);
+            
+        
+
+        marker_b05463459456ab4e1b93e5d2b5f974a5.bindPopup(popup_d93b849d5a64d031dcf1ad177ec28704)
+        ;
+
+        
+    
+    
+            marker_b05463459456ab4e1b93e5d2b5f974a5.bindTooltip(
+                `<div>
+                     9542182602
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_f14954601ae4d3011d86b5f36b2f43b0 = L.marker(
+                [31.1845895, 29.90726566],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_58ba4ab8a09b5ceba76d81258d35b9c8 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_9886cf83f333bb369451990551ef90c2 = $(`<div id="html_9886cf83f333bb369451990551ef90c2" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بقالة كيرو</b><br>كود التاجر: 6742496245<br>شارع المهدى العباسي غربال محرم<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.1845895,29.90726566&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_58ba4ab8a09b5ceba76d81258d35b9c8.setContent(html_9886cf83f333bb369451990551ef90c2);
+            
+        
+
+        marker_f14954601ae4d3011d86b5f36b2f43b0.bindPopup(popup_58ba4ab8a09b5ceba76d81258d35b9c8)
+        ;
+
+        
+    
+    
+            marker_f14954601ae4d3011d86b5f36b2f43b0.bindTooltip(
+                `<div>
+                     6742496245
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_bca3d14fe1d9a0f60218c89bfeacec3b = L.marker(
+                [31.18912333, 29.90050782],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_cf39f8ee75d81bdc2d42c98bddaca34c = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_4b857bc24984c2c0b8163ad8d8386c26 = $(`<div id="html_4b857bc24984c2c0b8163ad8d8386c26" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ام بلال</b><br>كود التاجر: 2947758576<br>جامع سلطان كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18912333,29.90050782&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_cf39f8ee75d81bdc2d42c98bddaca34c.setContent(html_4b857bc24984c2c0b8163ad8d8386c26);
+            
+        
+
+        marker_bca3d14fe1d9a0f60218c89bfeacec3b.bindPopup(popup_cf39f8ee75d81bdc2d42c98bddaca34c)
+        ;
+
+        
+    
+    
+            marker_bca3d14fe1d9a0f60218c89bfeacec3b.bindTooltip(
+                `<div>
+                     2947758576
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_b69e75f8ca38cc70f7cba6e50fbfd71a = L.marker(
+                [31.18696089, 29.90477392],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_18181de6fb5b43f727adc9658f1fb376 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_dd471eaf50d0d5997a6c797fe62abaaa = $(`<div id="html_dd471eaf50d0d5997a6c797fe62abaaa" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بازار بيبو</b><br>كود التاجر: 9763202089<br>شارع يكن باشا محرك بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18696089,29.90477392&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_18181de6fb5b43f727adc9658f1fb376.setContent(html_dd471eaf50d0d5997a6c797fe62abaaa);
+            
+        
+
+        marker_b69e75f8ca38cc70f7cba6e50fbfd71a.bindPopup(popup_18181de6fb5b43f727adc9658f1fb376)
+        ;
+
+        
+    
+    
+            marker_b69e75f8ca38cc70f7cba6e50fbfd71a.bindTooltip(
+                `<div>
+                     9763202089
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_79401452f7ea5c2e297ccf13fb491587 = L.marker(
+                [31.18745173, 29.90455299],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_cfd0015db649e288ffe40854cae72326 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b246751ef014608eee730ac601e8b636 = $(`<div id="html_b246751ef014608eee730ac601e8b636" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ام عبدالرحمن</b><br>كود التاجر: 3165085835<br>شارع يكن باشا الباب الجديد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18745173,29.90455299&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_cfd0015db649e288ffe40854cae72326.setContent(html_b246751ef014608eee730ac601e8b636);
+            
+        
+
+        marker_79401452f7ea5c2e297ccf13fb491587.bindPopup(popup_cfd0015db649e288ffe40854cae72326)
+        ;
+
+        
+    
+    
+            marker_79401452f7ea5c2e297ccf13fb491587.bindTooltip(
+                `<div>
+                     3165085835
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_df15514ca384cd0676308049fc598055 = L.marker(
+                [31.18628119, 29.90497951],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_1d4775c3a3886bf333edff9725cf4444 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_6e56b8f0b40a8e7dc1f9455450cac219 = $(`<div id="html_6e56b8f0b40a8e7dc1f9455450cac219" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>حمو السيد</b><br>كود التاجر: 1770948963<br>الباب الجديد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18628119,29.90497951&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_1d4775c3a3886bf333edff9725cf4444.setContent(html_6e56b8f0b40a8e7dc1f9455450cac219);
+            
+        
+
+        marker_df15514ca384cd0676308049fc598055.bindPopup(popup_1d4775c3a3886bf333edff9725cf4444)
+        ;
+
+        
+    
+    
+            marker_df15514ca384cd0676308049fc598055.bindTooltip(
+                `<div>
+                     1770948963
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_6a9968c9f985154956cb4f97a1caa688 = L.marker(
+                [31.1861489, 29.9098826],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_f077a631fd9c0421c360b70a4552c995 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_14ceb2c056bf91c9ff65defa40ca7e6c = $(`<div id="html_14ceb2c056bf91c9ff65defa40ca7e6c" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>اكاسيا فون</b><br>كود التاجر: 4029432472<br>شارع محسن غربال محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.1861489,29.9098826&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_f077a631fd9c0421c360b70a4552c995.setContent(html_14ceb2c056bf91c9ff65defa40ca7e6c);
+            
+        
+
+        marker_6a9968c9f985154956cb4f97a1caa688.bindPopup(popup_f077a631fd9c0421c360b70a4552c995)
+        ;
+
+        
+    
+    
+            marker_6a9968c9f985154956cb4f97a1caa688.bindTooltip(
+                `<div>
+                     4029432472
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_c161b84ea61879c211487261d573e6cf = L.marker(
+                [31.18550052, 29.90891108],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_747742172e67fa3913281f8de11d9c30 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_295b39a8a5044f429775a2c81a77215d = $(`<div id="html_295b39a8a5044f429775a2c81a77215d" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محل عماد</b><br>كود التاجر: 4961904901<br>شارع شجرة الدر غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18550052,29.90891108&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_747742172e67fa3913281f8de11d9c30.setContent(html_295b39a8a5044f429775a2c81a77215d);
+            
+        
+
+        marker_c161b84ea61879c211487261d573e6cf.bindPopup(popup_747742172e67fa3913281f8de11d9c30)
+        ;
+
+        
+    
+    
+            marker_c161b84ea61879c211487261d573e6cf.bindTooltip(
+                `<div>
+                     4961904901
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_1d09122c5d8a09a5472920504f9af591 = L.marker(
+                [31.18714286, 29.90439945],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_74091034a689302000f992f92787cdbb = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_30be0ecf2dafaa05dfd110eb5a1da8de = $(`<div id="html_30be0ecf2dafaa05dfd110eb5a1da8de" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>دكان فتحي</b><br>كود التاجر: 3699633550<br>شارع حافظ قبطان الباب الجديد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18714286,29.90439945&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_74091034a689302000f992f92787cdbb.setContent(html_30be0ecf2dafaa05dfd110eb5a1da8de);
+            
+        
+
+        marker_1d09122c5d8a09a5472920504f9af591.bindPopup(popup_74091034a689302000f992f92787cdbb)
+        ;
+
+        
+    
+    
+            marker_1d09122c5d8a09a5472920504f9af591.bindTooltip(
+                `<div>
+                     3699633550
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_3552994db89419b9dc158c26062775d9 = L.marker(
+                [31.1877521, 29.90252349999999],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_702be9979b48c722d22e049755de3eb1 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c9bf7ef74b54eb32b2c583df3574e881 = $(`<div id="html_c9bf7ef74b54eb32b2c583df3574e881" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ماركت الصعيدي</b><br>كود التاجر: 1773482750<br>51ش الشيخ بيرم متفرع م ايزيز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.1877521,29.90252349999999&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_702be9979b48c722d22e049755de3eb1.setContent(html_c9bf7ef74b54eb32b2c583df3574e881);
+            
+        
+
+        marker_3552994db89419b9dc158c26062775d9.bindPopup(popup_702be9979b48c722d22e049755de3eb1)
+        ;
+
+        
+    
+    
+            marker_3552994db89419b9dc158c26062775d9.bindTooltip(
+                `<div>
+                     1773482750
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_5ef1499316ebadd8b758002bfd727ecf = L.marker(
+                [31.186629999999997, 29.90959666666667],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_4693b7cceea4a23c15412666055f4d99 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_e37ff0b38f62878f7821de91e437eec3 = $(`<div id="html_e37ff0b38f62878f7821de91e437eec3" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>مينى ماركت ميدو</b><br>كود التاجر: 5122874862<br>شارع محسن غربال محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.186629999999997,29.90959666666667&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_4693b7cceea4a23c15412666055f4d99.setContent(html_e37ff0b38f62878f7821de91e437eec3);
+            
+        
+
+        marker_5ef1499316ebadd8b758002bfd727ecf.bindPopup(popup_4693b7cceea4a23c15412666055f4d99)
+        ;
+
+        
+    
+    
+            marker_5ef1499316ebadd8b758002bfd727ecf.bindTooltip(
+                `<div>
+                     5122874862
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_3de59ec41c7528aa2fcd11210f338ba3 = L.marker(
+                [31.18768166666667, 29.901504999999997],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_2a56ed5c331122b70712c222d479d65b = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b9e750df93c3eb0760b6c3931b4791a3 = $(`<div id="html_b9e750df93c3eb0760b6c3931b4791a3" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>مكتبة النجاح الحديثة</b><br>كود التاجر: 2836158573<br>شارع راغب باشا محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18768166666667,29.901504999999997&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_2a56ed5c331122b70712c222d479d65b.setContent(html_b9e750df93c3eb0760b6c3931b4791a3);
+            
+        
+
+        marker_3de59ec41c7528aa2fcd11210f338ba3.bindPopup(popup_2a56ed5c331122b70712c222d479d65b)
+        ;
+
+        
+    
+    
+            marker_3de59ec41c7528aa2fcd11210f338ba3.bindTooltip(
+                `<div>
+                     2836158573
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_dafe1d22bb4684ad6c3cc20b90b45002 = L.marker(
+                [31.068321666666666, 29.831256666666665],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_fb6dd107849a3f00fbb5072cfa6eda74 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_0d0355b638c0158078af1c5bb6326654 = $(`<div id="html_0d0355b638c0158078af1c5bb6326654" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ال كيان</b><br>كود التاجر: 6522513140<br>شارع راغب باشا محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.068321666666666,29.831256666666665&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_fb6dd107849a3f00fbb5072cfa6eda74.setContent(html_0d0355b638c0158078af1c5bb6326654);
+            
+        
+
+        marker_dafe1d22bb4684ad6c3cc20b90b45002.bindPopup(popup_fb6dd107849a3f00fbb5072cfa6eda74)
+        ;
+
+        
+    
+    
+            marker_dafe1d22bb4684ad6c3cc20b90b45002.bindTooltip(
+                `<div>
+                     6522513140
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_b7b1b0aad01ee824673648f696bdc198 = L.marker(
+                [31.196171666666668, 29.89187],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_2680ee02fff7d8062f5ad89845cf5017 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_6c287c2a32041e94eb95ae60a111cfa6 = $(`<div id="html_6c287c2a32041e94eb95ae60a111cfa6" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الشناوي</b><br>كود التاجر: 2236027073<br>شارع السبع بنات المنشية<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.196171666666668,29.89187&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_2680ee02fff7d8062f5ad89845cf5017.setContent(html_6c287c2a32041e94eb95ae60a111cfa6);
+            
+        
+
+        marker_b7b1b0aad01ee824673648f696bdc198.bindPopup(popup_2680ee02fff7d8062f5ad89845cf5017)
+        ;
+
+        
+    
+    
+            marker_b7b1b0aad01ee824673648f696bdc198.bindTooltip(
+                `<div>
+                     2236027073
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_46efd01bf67c94c87edeb4b2021e320c = L.marker(
+                [31.18572055, 29.89959126],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_e72b015584722883fb62796ac3fd4327 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_69d13a969836a49800f75dc618d71008 = $(`<div id="html_69d13a969836a49800f75dc618d71008" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الفادي</b><br>كود التاجر: 5524563699<br>38شارع البهي كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18572055,29.89959126&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_e72b015584722883fb62796ac3fd4327.setContent(html_69d13a969836a49800f75dc618d71008);
+            
+        
+
+        marker_46efd01bf67c94c87edeb4b2021e320c.bindPopup(popup_e72b015584722883fb62796ac3fd4327)
+        ;
+
+        
+    
+    
+            marker_46efd01bf67c94c87edeb4b2021e320c.bindTooltip(
+                `<div>
+                     5524563699
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_5183106f295bd15167412b85c2e59b81 = L.marker(
+                [31.18526935, 29.89988472],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_cc30d715568e6897cd6bb91ca47fc6ca = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_7ee34e2b91ba28b03af0a28b8a612fe9 = $(`<div id="html_7ee34e2b91ba28b03af0a28b8a612fe9" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ام مروان</b><br>كود التاجر: 6344248428<br>38شارع البهي كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18526935,29.89988472&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_cc30d715568e6897cd6bb91ca47fc6ca.setContent(html_7ee34e2b91ba28b03af0a28b8a612fe9);
+            
+        
+
+        marker_5183106f295bd15167412b85c2e59b81.bindPopup(popup_cc30d715568e6897cd6bb91ca47fc6ca)
+        ;
+
+        
+    
+    
+            marker_5183106f295bd15167412b85c2e59b81.bindTooltip(
+                `<div>
+                     6344248428
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_4434cdf312260b31c2e9667927f18aa7 = L.marker(
+                [31.18681539, 29.90082257],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_73d0641b9a27a7c26874e78e42281e2a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_9f761288de6d8bd2cae325b0189c7782 = $(`<div id="html_9f761288de6d8bd2cae325b0189c7782" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الشيخ</b><br>كود التاجر: 6481573928<br>شارع كمال الدين كرموز 7<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18681539,29.90082257&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_73d0641b9a27a7c26874e78e42281e2a.setContent(html_9f761288de6d8bd2cae325b0189c7782);
+            
+        
+
+        marker_4434cdf312260b31c2e9667927f18aa7.bindPopup(popup_73d0641b9a27a7c26874e78e42281e2a)
+        ;
+
+        
+    
+    
+            marker_4434cdf312260b31c2e9667927f18aa7.bindTooltip(
+                `<div>
+                     6481573928
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_71374115e647afe2a6690c3a3e1e8385 = L.marker(
+                [31.18695975, 29.90165859],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_bdbb191ead2cdff0d7f6934ee51a290e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_543aff2360b4986ebbe6a786eba6f01d = $(`<div id="html_543aff2360b4986ebbe6a786eba6f01d" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>اولاد جبريل</b><br>كود التاجر: 5052186526<br>شارع راغب باشا كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18695975,29.90165859&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_bdbb191ead2cdff0d7f6934ee51a290e.setContent(html_543aff2360b4986ebbe6a786eba6f01d);
+            
+        
+
+        marker_71374115e647afe2a6690c3a3e1e8385.bindPopup(popup_bdbb191ead2cdff0d7f6934ee51a290e)
+        ;
+
+        
+    
+    
+            marker_71374115e647afe2a6690c3a3e1e8385.bindTooltip(
+                `<div>
+                     5052186526
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_c1ac42b270a9ea098c61aab73d5837ce = L.marker(
+                [31.187301666666666, 29.907231666666668],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_8a06fbcaf26e2a57a948a25b7bff735a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_ce4123dd4f008396280f95a87b4dda88 = $(`<div id="html_ce4123dd4f008396280f95a87b4dda88" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>سنترال جاد</b><br>كود التاجر: 6801260370<br>شارع شجرة الدر غربال محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.187301666666666,29.907231666666668&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_8a06fbcaf26e2a57a948a25b7bff735a.setContent(html_ce4123dd4f008396280f95a87b4dda88);
+            
+        
+
+        marker_c1ac42b270a9ea098c61aab73d5837ce.bindPopup(popup_8a06fbcaf26e2a57a948a25b7bff735a)
+        ;
+
+        
+    
+    
+            marker_c1ac42b270a9ea098c61aab73d5837ce.bindTooltip(
+                `<div>
+                     6801260370
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_b0b0a9f6157bc35329634ed33d9920cf = L.marker(
+                [31.18165333333333, 29.905435000000004],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_e4722e796bb9f38197894fb5b9cd362d = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_462b718f2448eebd221fc43f34e4d7d9 = $(`<div id="html_462b718f2448eebd221fc43f34e4d7d9" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>سنترال الصفا</b><br>كود التاجر: 4242095640<br>قنال المحمودية كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18165333333333,29.905435000000004&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_e4722e796bb9f38197894fb5b9cd362d.setContent(html_462b718f2448eebd221fc43f34e4d7d9);
+            
+        
+
+        marker_b0b0a9f6157bc35329634ed33d9920cf.bindPopup(popup_e4722e796bb9f38197894fb5b9cd362d)
+        ;
+
+        
+    
+    
+            marker_b0b0a9f6157bc35329634ed33d9920cf.bindTooltip(
+                `<div>
+                     4242095640
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_582910e14b353a5a5c26cca346f0309e = L.marker(
+                [31.181554, 29.897436],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_899fadb23731c4c25330971802de139f = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_93446b57b5a581b2ee1d672073e7b0e6 = $(`<div id="html_93446b57b5a581b2ee1d672073e7b0e6" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>سوق أون لاين</b><br>كود التاجر: 8388040308<br>كرموز عامود السواري<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.181554,29.897436&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_899fadb23731c4c25330971802de139f.setContent(html_93446b57b5a581b2ee1d672073e7b0e6);
+            
+        
+
+        marker_582910e14b353a5a5c26cca346f0309e.bindPopup(popup_899fadb23731c4c25330971802de139f)
+        ;
+
+        
+    
+    
+            marker_582910e14b353a5a5c26cca346f0309e.bindTooltip(
+                `<div>
+                     8388040308
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_6e1e22c24ed0e9b4a431c4de2ce913be = L.marker(
+                [31.18425792, 29.90618379],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_e030473a1135bd9faba2bef2166415ff = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_e6d3a9406addb2503861523c4ac742e3 = $(`<div id="html_e6d3a9406addb2503861523c4ac742e3" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الاسلاميه</b><br>كود التاجر: 5496067702<br>غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18425792,29.90618379&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_e030473a1135bd9faba2bef2166415ff.setContent(html_e6d3a9406addb2503861523c4ac742e3);
+            
+        
+
+        marker_6e1e22c24ed0e9b4a431c4de2ce913be.bindPopup(popup_e030473a1135bd9faba2bef2166415ff)
+        ;
+
+        
+    
+    
+            marker_6e1e22c24ed0e9b4a431c4de2ce913be.bindTooltip(
+                `<div>
+                     5496067702
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_7f32dd0e1afe8327a194eec80b445890 = L.marker(
+                [31.1835307, 29.90641357],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_66cba99a49d1a5c77e25b53a8fa0ba85 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_2f707491be01bddb14e6d6b5048d543a = $(`<div id="html_2f707491be01bddb14e6d6b5048d543a" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ميشو</b><br>كود التاجر: 7459634833<br>١٩ شارع محمد السيد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.1835307,29.90641357&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_66cba99a49d1a5c77e25b53a8fa0ba85.setContent(html_2f707491be01bddb14e6d6b5048d543a);
+            
+        
+
+        marker_7f32dd0e1afe8327a194eec80b445890.bindPopup(popup_66cba99a49d1a5c77e25b53a8fa0ba85)
+        ;
+
+        
+    
+    
+            marker_7f32dd0e1afe8327a194eec80b445890.bindTooltip(
+                `<div>
+                     7459634833
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_89b4d343dbaa5aa24aad8d7ad1d21720 = L.marker(
+                [31.185593333333333, 29.904658333333334],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_032e4d2b7d2930fb810bb07586e22ef7 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_abbd7d34e4a00ca6fd6cbb3798252063 = $(`<div id="html_abbd7d34e4a00ca6fd6cbb3798252063" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>كاريكا</b><br>كود التاجر: 5351474303<br>8 شارع الهديا محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.185593333333333,29.904658333333334&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_032e4d2b7d2930fb810bb07586e22ef7.setContent(html_abbd7d34e4a00ca6fd6cbb3798252063);
+            
+        
+
+        marker_89b4d343dbaa5aa24aad8d7ad1d21720.bindPopup(popup_032e4d2b7d2930fb810bb07586e22ef7)
+        ;
+
+        
+    
+    
+            marker_89b4d343dbaa5aa24aad8d7ad1d21720.bindTooltip(
+                `<div>
+                     5351474303
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_f13a2b8b65ab0a0924f625b9834e4ddc = L.marker(
+                [31.188198333333336, 29.90808666666667],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_214a50d6a8fbf12e2a810fc5c2870395 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_d4d8ca3e74306ffbd5a4affd8593d1d5 = $(`<div id="html_d4d8ca3e74306ffbd5a4affd8593d1d5" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>TWIX</b><br>كود التاجر: 3924326476<br>102 شارع محسن غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.188198333333336,29.90808666666667&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_214a50d6a8fbf12e2a810fc5c2870395.setContent(html_d4d8ca3e74306ffbd5a4affd8593d1d5);
+            
+        
+
+        marker_f13a2b8b65ab0a0924f625b9834e4ddc.bindPopup(popup_214a50d6a8fbf12e2a810fc5c2870395)
+        ;
+
+        
+    
+    
+            marker_f13a2b8b65ab0a0924f625b9834e4ddc.bindTooltip(
+                `<div>
+                     3924326476
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_614ad33b43c3278d2f493a6f23d0d500 = L.marker(
+                [31.191817, 29.905193],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_f3ea93de9675ad214b7c05db8553f78d = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_60b4563c1c640f3f1a56d2d243954062 = $(`<div id="html_60b4563c1c640f3f1a56d2d243954062" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الغندور</b><br>كود التاجر: 7008800996<br>ش عثمان جلال محربك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.191817,29.905193&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_f3ea93de9675ad214b7c05db8553f78d.setContent(html_60b4563c1c640f3f1a56d2d243954062);
+            
+        
+
+        marker_614ad33b43c3278d2f493a6f23d0d500.bindPopup(popup_f3ea93de9675ad214b7c05db8553f78d)
+        ;
+
+        
+    
+    
+            marker_614ad33b43c3278d2f493a6f23d0d500.bindTooltip(
+                `<div>
+                     7008800996
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_7af1ec49a56da581b16b81e03625fbfc = L.marker(
+                [31.18518791, 29.90021324],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_44509b337f92f7f5cac3adeb77f5aab7 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_bbafa4493d6577695eade7e17b987641 = $(`<div id="html_bbafa4493d6577695eade7e17b987641" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>عم جمال</b><br>كود التاجر: 1411065440<br>٤٦ش العدروسي كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18518791,29.90021324&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_44509b337f92f7f5cac3adeb77f5aab7.setContent(html_bbafa4493d6577695eade7e17b987641);
+            
+        
+
+        marker_7af1ec49a56da581b16b81e03625fbfc.bindPopup(popup_44509b337f92f7f5cac3adeb77f5aab7)
+        ;
+
+        
+    
+    
+            marker_7af1ec49a56da581b16b81e03625fbfc.bindTooltip(
+                `<div>
+                     1411065440
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_2ab21f722d0283928c3e256c4d0f4f79 = L.marker(
+                [31.185333333333332, 29.90952666666667],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_b44b7449519bd0a7242d2612dcf1dfea = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_714c185955059ef68a770c3ca6fa9f7f = $(`<div id="html_714c185955059ef68a770c3ca6fa9f7f" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بازار مينا</b><br>كود التاجر: 1411301117<br>8 اخوان علصفا غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.185333333333332,29.90952666666667&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_b44b7449519bd0a7242d2612dcf1dfea.setContent(html_714c185955059ef68a770c3ca6fa9f7f);
+            
+        
+
+        marker_2ab21f722d0283928c3e256c4d0f4f79.bindPopup(popup_b44b7449519bd0a7242d2612dcf1dfea)
+        ;
+
+        
+    
+    
+            marker_2ab21f722d0283928c3e256c4d0f4f79.bindTooltip(
+                `<div>
+                     1411301117
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_3c684bc3cd2250a93aee8b2f9c5a277a = L.marker(
+                [31.186974, 29.906434],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_61cd4059b42f3e718487157741eb66c5 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_14a75f497aad06c3f2535ce7aae1c0ee = $(`<div id="html_14a75f497aad06c3f2535ce7aae1c0ee" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محل عاطف</b><br>كود التاجر: 9032246838<br>شارع الازرقي الباب الجديد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.186974,29.906434&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_61cd4059b42f3e718487157741eb66c5.setContent(html_14a75f497aad06c3f2535ce7aae1c0ee);
+            
+        
+
+        marker_3c684bc3cd2250a93aee8b2f9c5a277a.bindPopup(popup_61cd4059b42f3e718487157741eb66c5)
+        ;
+
+        
+    
+    
+            marker_3c684bc3cd2250a93aee8b2f9c5a277a.bindTooltip(
+                `<div>
+                     9032246838
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_24a0546c2d668d8e9eca88f954f8af52 = L.marker(
+                [31.18640751, 29.90985875],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_3013aa23d0025ae4dae4ba506d21808b = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_d1b89d17474186f1ae4ffeaaf405b13c = $(`<div id="html_d1b89d17474186f1ae4ffeaaf405b13c" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>مكتبة عبده</b><br>كود التاجر: 8412951256<br>3ش ابيدوس الباب الجديد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18640751,29.90985875&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_3013aa23d0025ae4dae4ba506d21808b.setContent(html_d1b89d17474186f1ae4ffeaaf405b13c);
+            
+        
+
+        marker_24a0546c2d668d8e9eca88f954f8af52.bindPopup(popup_3013aa23d0025ae4dae4ba506d21808b)
+        ;
+
+        
+    
+    
+            marker_24a0546c2d668d8e9eca88f954f8af52.bindTooltip(
+                `<div>
+                     8412951256
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_b3d1fe1a23c754b37238026d546d9654 = L.marker(
+                [31.18538283, 29.90494303],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_ddd9cf2a9f76648a0e4285115f6b84fe = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c7f2b88ebbfda3e9f0508fc04daf4841 = $(`<div id="html_c7f2b88ebbfda3e9f0508fc04daf4841" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محمصة خالد بن الوليد</b><br>كود التاجر: 1174435111<br>32ش الفرغاني غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18538283,29.90494303&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_ddd9cf2a9f76648a0e4285115f6b84fe.setContent(html_c7f2b88ebbfda3e9f0508fc04daf4841);
+            
+        
+
+        marker_b3d1fe1a23c754b37238026d546d9654.bindPopup(popup_ddd9cf2a9f76648a0e4285115f6b84fe)
+        ;
+
+        
+    
+    
+            marker_b3d1fe1a23c754b37238026d546d9654.bindTooltip(
+                `<div>
+                     1174435111
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_e3804ca526e57686c45a0c496f0a2700 = L.marker(
+                [31.18537972, 29.90357429],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_ca0629ee12397615d3eb4ef3771bc1cb = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_e4c9bdb6c83ddf9af63a08410e5f1ae9 = $(`<div id="html_e4c9bdb6c83ddf9af63a08410e5f1ae9" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بقالة سمير</b><br>كود التاجر: 5251594247<br>30ش الفرغاني غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18537972,29.90357429&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_ca0629ee12397615d3eb4ef3771bc1cb.setContent(html_e4c9bdb6c83ddf9af63a08410e5f1ae9);
+            
+        
+
+        marker_e3804ca526e57686c45a0c496f0a2700.bindPopup(popup_ca0629ee12397615d3eb4ef3771bc1cb)
+        ;
+
+        
+    
+    
+            marker_e3804ca526e57686c45a0c496f0a2700.bindTooltip(
+                `<div>
+                     5251594247
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_f3cbb230a52e34f6a3ed5a83ec6da7d8 = L.marker(
+                [31.18457598, 29.90676983],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_0ee00f20022481f41d6366cd44b26ea9 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b2a7ac1f94111d0d6b5fba4a142dbf72 = $(`<div id="html_b2a7ac1f94111d0d6b5fba4a142dbf72" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محل القمر</b><br>كود التاجر: 4322145306<br>2 الشموس الباب الجديد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18457598,29.90676983&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_0ee00f20022481f41d6366cd44b26ea9.setContent(html_b2a7ac1f94111d0d6b5fba4a142dbf72);
+            
+        
+
+        marker_f3cbb230a52e34f6a3ed5a83ec6da7d8.bindPopup(popup_0ee00f20022481f41d6366cd44b26ea9)
+        ;
+
+        
+    
+    
+            marker_f3cbb230a52e34f6a3ed5a83ec6da7d8.bindTooltip(
+                `<div>
+                     4322145306
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_345083b812ceb84703507545eb0ebe04 = L.marker(
+                [31.18673986, 29.901071],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_fdede71a5bdcb2c319bde2421cae89cc = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_f366b935281571181abbea92ff164566 = $(`<div id="html_f366b935281571181abbea92ff164566" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محل بلية</b><br>كود التاجر: 5186088137<br>94 الترمزي كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18673986,29.901071&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_fdede71a5bdcb2c319bde2421cae89cc.setContent(html_f366b935281571181abbea92ff164566);
+            
+        
+
+        marker_345083b812ceb84703507545eb0ebe04.bindPopup(popup_fdede71a5bdcb2c319bde2421cae89cc)
+        ;
+
+        
+    
+    
+            marker_345083b812ceb84703507545eb0ebe04.bindTooltip(
+                `<div>
+                     5186088137
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_a6a5806d44d0b324cc54072f49493169 = L.marker(
+                [31.18509172, 29.89887311],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_3690111313a407e486fa461ff61f52db = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_557507cf0211a14c4215eaf810d711f3 = $(`<div id="html_557507cf0211a14c4215eaf810d711f3" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ماركت المدينة المنورة</b><br>كود التاجر: 6688673339<br>32 شارع العدروسي كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18509172,29.89887311&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_3690111313a407e486fa461ff61f52db.setContent(html_557507cf0211a14c4215eaf810d711f3);
+            
+        
+
+        marker_a6a5806d44d0b324cc54072f49493169.bindPopup(popup_3690111313a407e486fa461ff61f52db)
+        ;
+
+        
+    
+    
+            marker_a6a5806d44d0b324cc54072f49493169.bindTooltip(
+                `<div>
+                     6688673339
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_d320d9466455463b31f6086af4690f74 = L.marker(
+                [31.184405, 29.909668333333336],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_e5328e08ec2935d3bcfdf2effc2baf01 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_70f07737e6006509aa55987bcbb41133 = $(`<div id="html_70f07737e6006509aa55987bcbb41133" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ماركت عكاشة</b><br>كود التاجر: 7448808098<br>شارع النفوس غربال محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.184405,29.909668333333336&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_e5328e08ec2935d3bcfdf2effc2baf01.setContent(html_70f07737e6006509aa55987bcbb41133);
+            
+        
+
+        marker_d320d9466455463b31f6086af4690f74.bindPopup(popup_e5328e08ec2935d3bcfdf2effc2baf01)
+        ;
+
+        
+    
+    
+            marker_d320d9466455463b31f6086af4690f74.bindTooltip(
+                `<div>
+                     7448808098
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_9feac63edd3cf0c297b3a8086ffceb2d = L.marker(
+                [31.18465624, 29.89942361],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_dd5941a33761e8cd3aef17d5154b190e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_f49dcb3a2f9dd965fe50c38d430335ea = $(`<div id="html_f49dcb3a2f9dd965fe50c38d430335ea" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بازار حمادة</b><br>كود التاجر: 2528486330<br>33ش رحاب كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18465624,29.89942361&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_dd5941a33761e8cd3aef17d5154b190e.setContent(html_f49dcb3a2f9dd965fe50c38d430335ea);
+            
+        
+
+        marker_9feac63edd3cf0c297b3a8086ffceb2d.bindPopup(popup_dd5941a33761e8cd3aef17d5154b190e)
+        ;
+
+        
+    
+    
+            marker_9feac63edd3cf0c297b3a8086ffceb2d.bindTooltip(
+                `<div>
+                     2528486330
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_6a1fdff3be464d196a3de7544ac20418 = L.marker(
+                [31.185985, 29.902698],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_2afac0882d0a7f831555a9167dcb92ee = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_58c3ac8996e38735aa0a37d39e9784a0 = $(`<div id="html_58c3ac8996e38735aa0a37d39e9784a0" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بيت العيلة</b><br>كود التاجر: 5336439165<br>75 راغب باشا محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.185985,29.902698&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_2afac0882d0a7f831555a9167dcb92ee.setContent(html_58c3ac8996e38735aa0a37d39e9784a0);
+            
+        
+
+        marker_6a1fdff3be464d196a3de7544ac20418.bindPopup(popup_2afac0882d0a7f831555a9167dcb92ee)
+        ;
+
+        
+    
+    
+            marker_6a1fdff3be464d196a3de7544ac20418.bindTooltip(
+                `<div>
+                     5336439165
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_2377cd6fe1d197ad8d6c3e2408d6aab6 = L.marker(
+                [31.18737279, 29.90686327],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_e98900ae6fba440436e02c4abe999b5c = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b3e57e1c17a39b70f867f832237e6b05 = $(`<div id="html_b3e57e1c17a39b70f867f832237e6b05" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محل لطيف</b><br>كود التاجر: 4914639013<br>1ش اوزوريس غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18737279,29.90686327&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_e98900ae6fba440436e02c4abe999b5c.setContent(html_b3e57e1c17a39b70f867f832237e6b05);
+            
+        
+
+        marker_2377cd6fe1d197ad8d6c3e2408d6aab6.bindPopup(popup_e98900ae6fba440436e02c4abe999b5c)
+        ;
+
+        
+    
+    
+            marker_2377cd6fe1d197ad8d6c3e2408d6aab6.bindTooltip(
+                `<div>
+                     4914639013
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_5d68cd5bebef4481ac5415c45601e1fe = L.marker(
+                [31.183676, 29.906364],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_f03abb5cd7a02a1ad3822fca65aa1bcb = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_85f2939f8f43c866775014e530cb8fda = $(`<div id="html_85f2939f8f43c866775014e530cb8fda" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>معرض يوسف</b><br>كود التاجر: 1422008905<br>21ش السيد محمد عباس المصري غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.183676,29.906364&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_f03abb5cd7a02a1ad3822fca65aa1bcb.setContent(html_85f2939f8f43c866775014e530cb8fda);
+            
+        
+
+        marker_5d68cd5bebef4481ac5415c45601e1fe.bindPopup(popup_f03abb5cd7a02a1ad3822fca65aa1bcb)
+        ;
+
+        
+    
+    
+            marker_5d68cd5bebef4481ac5415c45601e1fe.bindTooltip(
+                `<div>
+                     1422008905
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_48f2f710a4ff364dec0d14778324e702 = L.marker(
+                [31.18485597, 29.90028432],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_a2917646cc81b794ef6913f679aa997f = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_a714b0434baec1e1c6af419f2e1411c8 = $(`<div id="html_a714b0434baec1e1c6af419f2e1411c8" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محمصة سلاح</b><br>كود التاجر: 6292156302<br>شارع العمري كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18485597,29.90028432&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_a2917646cc81b794ef6913f679aa997f.setContent(html_a714b0434baec1e1c6af419f2e1411c8);
+            
+        
+
+        marker_48f2f710a4ff364dec0d14778324e702.bindPopup(popup_a2917646cc81b794ef6913f679aa997f)
+        ;
+
+        
+    
+    
+            marker_48f2f710a4ff364dec0d14778324e702.bindTooltip(
+                `<div>
+                     6292156302
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_bfa84f77802fec8fc8474e422a0461be = L.marker(
+                [31.18755666666667, 29.90399],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_ff490837198f4d8752011bea983f956e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_550bfa6fda3c4105d36a9ab9ec52fbdf = $(`<div id="html_550bfa6fda3c4105d36a9ab9ec52fbdf" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بازار ابو عمر</b><br>كود التاجر: 5966419384<br>48ش ابوان محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18755666666667,29.90399&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_ff490837198f4d8752011bea983f956e.setContent(html_550bfa6fda3c4105d36a9ab9ec52fbdf);
+            
+        
+
+        marker_bfa84f77802fec8fc8474e422a0461be.bindPopup(popup_ff490837198f4d8752011bea983f956e)
+        ;
+
+        
+    
+    
+            marker_bfa84f77802fec8fc8474e422a0461be.bindTooltip(
+                `<div>
+                     5966419384
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_68c3049d3c529de592645c610a06274b = L.marker(
+                [31.1840198, 29.9084545],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_453e7c40de60a3151e81c6d457de83ce = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_d61e247e428901b0d44fd2eb3a876611 = $(`<div id="html_d61e247e428901b0d44fd2eb3a876611" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بلاستيشن فهمي</b><br>كود التاجر: 3141576782<br>34 شارع النجوم -محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.1840198,29.9084545&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_453e7c40de60a3151e81c6d457de83ce.setContent(html_d61e247e428901b0d44fd2eb3a876611);
+            
+        
+
+        marker_68c3049d3c529de592645c610a06274b.bindPopup(popup_453e7c40de60a3151e81c6d457de83ce)
+        ;
+
+        
+    
+    
+            marker_68c3049d3c529de592645c610a06274b.bindTooltip(
+                `<div>
+                     3141576782
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_602350a5f0ec3d30ca3c48bad4d1dfb3 = L.marker(
+                [31.1855471, 29.9026378],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_17f4d6264ad1b2cb22fa88911547c560 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_5e42875426a83365f3046fefff29ab81 = $(`<div id="html_5e42875426a83365f3046fefff29ab81" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الاقصي</b><br>كود التاجر: 6627654328<br>شارع راغب باشا محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.1855471,29.9026378&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_17f4d6264ad1b2cb22fa88911547c560.setContent(html_5e42875426a83365f3046fefff29ab81);
+            
+        
+
+        marker_602350a5f0ec3d30ca3c48bad4d1dfb3.bindPopup(popup_17f4d6264ad1b2cb22fa88911547c560)
+        ;
+
+        
+    
+    
+            marker_602350a5f0ec3d30ca3c48bad4d1dfb3.bindTooltip(
+                `<div>
+                     6627654328
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_0332e76ba84e1aaeb6be8bc21a2a4871 = L.marker(
+                [31.18744333333333, 29.905966666666668],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_57f5828ee6779b0017323d3cba178ed8 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_06ce71c8dd7bdd3bbffe136230b61cf5 = $(`<div id="html_06ce71c8dd7bdd3bbffe136230b61cf5" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بقالة احمد علي</b><br>كود التاجر: 8613633694<br>٣٣ش النجوم محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18744333333333,29.905966666666668&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_57f5828ee6779b0017323d3cba178ed8.setContent(html_06ce71c8dd7bdd3bbffe136230b61cf5);
+            
+        
+
+        marker_0332e76ba84e1aaeb6be8bc21a2a4871.bindPopup(popup_57f5828ee6779b0017323d3cba178ed8)
+        ;
+
+        
+    
+    
+            marker_0332e76ba84e1aaeb6be8bc21a2a4871.bindTooltip(
+                `<div>
+                     8613633694
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_ca0ad429ee7e8550fc9457faec283e0c = L.marker(
+                [31.182936666666667, 29.909088333333337],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_390cb1bfa81d164331a3265113624c79 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_a0acfd36dbaec855125d9ca36d0743c8 = $(`<div id="html_a0acfd36dbaec855125d9ca36d0743c8" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ماركت المناهري</b><br>كود التاجر: 9557781406<br>10 ش شجره الدر غربال محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.182936666666667,29.909088333333337&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_390cb1bfa81d164331a3265113624c79.setContent(html_a0acfd36dbaec855125d9ca36d0743c8);
+            
+        
+
+        marker_ca0ad429ee7e8550fc9457faec283e0c.bindPopup(popup_390cb1bfa81d164331a3265113624c79)
+        ;
+
+        
+    
+    
+            marker_ca0ad429ee7e8550fc9457faec283e0c.bindTooltip(
+                `<div>
+                     9557781406
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_310411aa01ac4aa9414b2652ae150d9d = L.marker(
+                [31.18706981, 29.90535378],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_c401cd3369cb4a5080a2ca1f08c097ee = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_5df87c7385fc0aa80827fced2e5d8765 = $(`<div id="html_5df87c7385fc0aa80827fced2e5d8765" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بقالة عمر وسما</b><br>كود التاجر: 1710748044<br>16ش نجيب الحداد والنجوم غربال محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18706981,29.90535378&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_c401cd3369cb4a5080a2ca1f08c097ee.setContent(html_5df87c7385fc0aa80827fced2e5d8765);
+            
+        
+
+        marker_310411aa01ac4aa9414b2652ae150d9d.bindPopup(popup_c401cd3369cb4a5080a2ca1f08c097ee)
+        ;
+
+        
+    
+    
+            marker_310411aa01ac4aa9414b2652ae150d9d.bindTooltip(
+                `<div>
+                     1710748044
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_c0da8bf6b75771861d0ce2df1e37c803 = L.marker(
+                [31.185381, 29.89861],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_cb8be94fa1e7e3219c0fabbd265e6ff4 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_2c5016f134934b297acf18ef88d134b7 = $(`<div id="html_2c5016f134934b297acf18ef88d134b7" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>السلام الدولى</b><br>كود التاجر: 6975798327<br>شارع راغب باشا كرموز ١٤<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.185381,29.89861&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_cb8be94fa1e7e3219c0fabbd265e6ff4.setContent(html_2c5016f134934b297acf18ef88d134b7);
+            
+        
+
+        marker_c0da8bf6b75771861d0ce2df1e37c803.bindPopup(popup_cb8be94fa1e7e3219c0fabbd265e6ff4)
+        ;
+
+        
+    
+    
+            marker_c0da8bf6b75771861d0ce2df1e37c803.bindTooltip(
+                `<div>
+                     6975798327
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_90b364c9cfd9944d745332e872340c64 = L.marker(
+                [31.18223529, 29.90558389],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_6ee8e58cdd357865a524c25df420ccd8 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_864cc8ffad162c7a30681388adc2bb39 = $(`<div id="html_864cc8ffad162c7a30681388adc2bb39" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محمصة منصور</b><br>كود التاجر: 6776971863<br>2 شارع راغب كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18223529,29.90558389&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_6ee8e58cdd357865a524c25df420ccd8.setContent(html_864cc8ffad162c7a30681388adc2bb39);
+            
+        
+
+        marker_90b364c9cfd9944d745332e872340c64.bindPopup(popup_6ee8e58cdd357865a524c25df420ccd8)
+        ;
+
+        
+    
+    
+            marker_90b364c9cfd9944d745332e872340c64.bindTooltip(
+                `<div>
+                     6776971863
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_47e64ada154461c05e67dcb26e5e86e4 = L.marker(
+                [31.18605049, 29.89872765],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_a67358c697e7b40d4eceaeffe6560a20 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b5c80af41f05ac700d0d827d59368c66 = $(`<div id="html_b5c80af41f05ac700d0d827d59368c66" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>المنوفي</b><br>كود التاجر: 8906166611<br>115النيل كرموز البياصة<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18605049,29.89872765&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_a67358c697e7b40d4eceaeffe6560a20.setContent(html_b5c80af41f05ac700d0d827d59368c66);
+            
+        
+
+        marker_47e64ada154461c05e67dcb26e5e86e4.bindPopup(popup_a67358c697e7b40d4eceaeffe6560a20)
+        ;
+
+        
+    
+    
+            marker_47e64ada154461c05e67dcb26e5e86e4.bindTooltip(
+                `<div>
+                     8906166611
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_5fe4916c6bc891262a64cb4e0b7fda3d = L.marker(
+                [31.185911666666666, 29.89880833333333],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_4dd9bc38310c117d01169b7e31f10022 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_6585bf3f6adbd793979aaae1d1c72430 = $(`<div id="html_6585bf3f6adbd793979aaae1d1c72430" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ماركت المنوفي</b><br>كود التاجر: 2556656993<br>شارع النيل البياصة كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.185911666666666,29.89880833333333&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_4dd9bc38310c117d01169b7e31f10022.setContent(html_6585bf3f6adbd793979aaae1d1c72430);
+            
+        
+
+        marker_5fe4916c6bc891262a64cb4e0b7fda3d.bindPopup(popup_4dd9bc38310c117d01169b7e31f10022)
+        ;
+
+        
+    
+    
+            marker_5fe4916c6bc891262a64cb4e0b7fda3d.bindTooltip(
+                `<div>
+                     2556656993
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_67e167fcc2715e349b13680bb3f0b00c = L.marker(
+                [31.18624629, 29.89794354],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_f4e9f39fea1448cc3787427f461a2fab = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_439f41e41ecfb6a7bd2f9e0648626650 = $(`<div id="html_439f41e41ecfb6a7bd2f9e0648626650" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بقالة ابو خالد</b><br>كود التاجر: 7753267617<br>16شارع الشمس كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18624629,29.89794354&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_f4e9f39fea1448cc3787427f461a2fab.setContent(html_439f41e41ecfb6a7bd2f9e0648626650);
+            
+        
+
+        marker_67e167fcc2715e349b13680bb3f0b00c.bindPopup(popup_f4e9f39fea1448cc3787427f461a2fab)
+        ;
+
+        
+    
+    
+            marker_67e167fcc2715e349b13680bb3f0b00c.bindTooltip(
+                `<div>
+                     7753267617
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_13eb125d2814b993017c7fec226cc78b = L.marker(
+                [31.185581666666668, 29.90430333333334],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_275a1119de078c93a421bb1b6327fcc5 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_3bfca272fbd33a857abd5c0acfd7b0e0 = $(`<div id="html_3bfca272fbd33a857abd5c0acfd7b0e0" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>سنترال الايمان</b><br>كود التاجر: 4950774824<br>12 شارع ابوان محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.185581666666668,29.90430333333334&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_275a1119de078c93a421bb1b6327fcc5.setContent(html_3bfca272fbd33a857abd5c0acfd7b0e0);
+            
+        
+
+        marker_13eb125d2814b993017c7fec226cc78b.bindPopup(popup_275a1119de078c93a421bb1b6327fcc5)
+        ;
+
+        
+    
+    
+            marker_13eb125d2814b993017c7fec226cc78b.bindTooltip(
+                `<div>
+                     4950774824
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_fb69da0119bb4db9ffd8d7fdcfaee1fc = L.marker(
+                [31.18577677, 29.89776766],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_94b78c8d4b966c169773192ad7c98c1d = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_9b6178c34df384d88534a4f880949754 = $(`<div id="html_9b6178c34df384d88534a4f880949754" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بيسو رسمي</b><br>كود التاجر: 7142043217<br>11ش المحمدية باب سدره كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18577677,29.89776766&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_94b78c8d4b966c169773192ad7c98c1d.setContent(html_9b6178c34df384d88534a4f880949754);
+            
+        
+
+        marker_fb69da0119bb4db9ffd8d7fdcfaee1fc.bindPopup(popup_94b78c8d4b966c169773192ad7c98c1d)
+        ;
+
+        
+    
+    
+            marker_fb69da0119bb4db9ffd8d7fdcfaee1fc.bindTooltip(
+                `<div>
+                     7142043217
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_43afb5d024d89e8554781a293b7c4ee6 = L.marker(
+                [31.069581666666668, 29.826954999999998],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_577602f5957b53371f6c4c684575ea6a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_2266c355fd374f012d1356e3bf4176d2 = $(`<div id="html_2266c355fd374f012d1356e3bf4176d2" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ابو الحاج</b><br>كود التاجر: 9575759103<br>ك24 طريق مصر الصحراوي مرغم<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.069581666666668,29.826954999999998&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_577602f5957b53371f6c4c684575ea6a.setContent(html_2266c355fd374f012d1356e3bf4176d2);
+            
+        
+
+        marker_43afb5d024d89e8554781a293b7c4ee6.bindPopup(popup_577602f5957b53371f6c4c684575ea6a)
+        ;
+
+        
+    
+    
+            marker_43afb5d024d89e8554781a293b7c4ee6.bindTooltip(
+                `<div>
+                     9575759103
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_fb1c0293f1ba17bc6631194571090b4e = L.marker(
+                [31.18464, 29.909982],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_174c5a4f0cd118a6f65b157688d64821 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_562297c9fb372f831daa02bcdd3ed7a7 = $(`<div id="html_562297c9fb372f831daa02bcdd3ed7a7" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بقالة عيد</b><br>كود التاجر: 5781167161<br>21 اخوان الصفا غربال محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18464,29.909982&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_174c5a4f0cd118a6f65b157688d64821.setContent(html_562297c9fb372f831daa02bcdd3ed7a7);
+            
+        
+
+        marker_fb1c0293f1ba17bc6631194571090b4e.bindPopup(popup_174c5a4f0cd118a6f65b157688d64821)
+        ;
+
+        
+    
+    
+            marker_fb1c0293f1ba17bc6631194571090b4e.bindTooltip(
+                `<div>
+                     5781167161
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_c418b602104673e21fa5c1064a1c903a = L.marker(
+                [31.185136, 29.907109],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_9f9f3d992c44349b52f4240795bf9624 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_f53ac6202789d6f69b30dfdd7bb32d65 = $(`<div id="html_f53ac6202789d6f69b30dfdd7bb32d65" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ماركت العائلة</b><br>كود التاجر: 8028682537<br>54 شارع المهدي العباسي غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.185136,29.907109&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_9f9f3d992c44349b52f4240795bf9624.setContent(html_f53ac6202789d6f69b30dfdd7bb32d65);
+            
+        
+
+        marker_c418b602104673e21fa5c1064a1c903a.bindPopup(popup_9f9f3d992c44349b52f4240795bf9624)
+        ;
+
+        
+    
+    
+            marker_c418b602104673e21fa5c1064a1c903a.bindTooltip(
+                `<div>
+                     8028682537
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_e98f31fe8d41c551cf128938bb60321e = L.marker(
+                [31.068306666666665, 29.723018333333336],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_9c9894b362525d097df67e13316bc835 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_9c487c2779345475c2fe5d002be79009 = $(`<div id="html_9c487c2779345475c2fe5d002be79009" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>نيو سيتى</b><br>كود التاجر: 8945400713<br>شارع عبد السلام الهلباوي محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.068306666666665,29.723018333333336&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_9c9894b362525d097df67e13316bc835.setContent(html_9c487c2779345475c2fe5d002be79009);
+            
+        
+
+        marker_e98f31fe8d41c551cf128938bb60321e.bindPopup(popup_9c9894b362525d097df67e13316bc835)
+        ;
+
+        
+    
+    
+            marker_e98f31fe8d41c551cf128938bb60321e.bindTooltip(
+                `<div>
+                     8945400713
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_2e9ed7fa24a55fc45bce27a2f1d35c90 = L.marker(
+                [31.182816666666668, 29.904481666666666],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_91e8877bb3b37be0100f7e6faef94609 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_6456c02e0eadcfc0ae2c6dc48951b0ed = $(`<div id="html_6456c02e0eadcfc0ae2c6dc48951b0ed" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>سنترال الراعي</b><br>كود التاجر: 7560537880<br>19ش راغب باشا كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.182816666666668,29.904481666666666&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_91e8877bb3b37be0100f7e6faef94609.setContent(html_6456c02e0eadcfc0ae2c6dc48951b0ed);
+            
+        
+
+        marker_2e9ed7fa24a55fc45bce27a2f1d35c90.bindPopup(popup_91e8877bb3b37be0100f7e6faef94609)
+        ;
+
+        
+    
+    
+            marker_2e9ed7fa24a55fc45bce27a2f1d35c90.bindTooltip(
+                `<div>
+                     7560537880
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_36ad722800dbe6fe71d7c06fd26c2197 = L.marker(
+                [31.188001666666665, 29.90344],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_c88cff65e31eef7193f8e55516fd5ecf = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_79d13dfa7dd24d4d0bd2277236633395 = $(`<div id="html_79d13dfa7dd24d4d0bd2277236633395" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>سنترال ايهاب</b><br>كود التاجر: 9806095518<br>67الهدايا شارع ايزيز كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.188001666666665,29.90344&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_c88cff65e31eef7193f8e55516fd5ecf.setContent(html_79d13dfa7dd24d4d0bd2277236633395);
+            
+        
+
+        marker_36ad722800dbe6fe71d7c06fd26c2197.bindPopup(popup_c88cff65e31eef7193f8e55516fd5ecf)
+        ;
+
+        
+    
+    
+            marker_36ad722800dbe6fe71d7c06fd26c2197.bindTooltip(
+                `<div>
+                     9806095518
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_e309d57b3a4c5d088885bb18a4d3db24 = L.marker(
+                [31.187580000000004, 29.902888333333333],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_61b77e7cc4bcbd0d177a30af2de9607e = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_a5e40976b16065c3a5169948df8d13be = $(`<div id="html_a5e40976b16065c3a5169948df8d13be" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>محمصة ابو عمرو</b><br>كود التاجر: 1194518389<br>31ش ايزيز محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.187580000000004,29.902888333333333&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_61b77e7cc4bcbd0d177a30af2de9607e.setContent(html_a5e40976b16065c3a5169948df8d13be);
+            
+        
+
+        marker_e309d57b3a4c5d088885bb18a4d3db24.bindPopup(popup_61b77e7cc4bcbd0d177a30af2de9607e)
+        ;
+
+        
+    
+    
+            marker_e309d57b3a4c5d088885bb18a4d3db24.bindTooltip(
+                `<div>
+                     1194518389
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_0c94930c3f43a1a437ab7d4b41c18709 = L.marker(
+                [31.184861666666666, 29.909110000000002],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_be825874db7c81bef1eb7c78b6275a09 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_7903f37fa68554a50a15cda723955307 = $(`<div id="html_7903f37fa68554a50a15cda723955307" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بازار المحبة</b><br>كود التاجر: 7685294238<br>109ش الكعبة غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.184861666666666,29.909110000000002&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_be825874db7c81bef1eb7c78b6275a09.setContent(html_7903f37fa68554a50a15cda723955307);
+            
+        
+
+        marker_0c94930c3f43a1a437ab7d4b41c18709.bindPopup(popup_be825874db7c81bef1eb7c78b6275a09)
+        ;
+
+        
+    
+    
+            marker_0c94930c3f43a1a437ab7d4b41c18709.bindTooltip(
+                `<div>
+                     7685294238
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_49550ad306e2c32dfdcaf48f76727e91 = L.marker(
+                [31.18606529, 29.90069814],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_1dd5be37412e4e80fb427b8dd4dd853d = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_753a8d71be9abec4b8ce1b83aca056b8 = $(`<div id="html_753a8d71be9abec4b8ce1b83aca056b8" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ماركت اولاد عمران</b><br>كود التاجر: 7228323628<br>١٠٢ش العمري كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18606529,29.90069814&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_1dd5be37412e4e80fb427b8dd4dd853d.setContent(html_753a8d71be9abec4b8ce1b83aca056b8);
+            
+        
+
+        marker_49550ad306e2c32dfdcaf48f76727e91.bindPopup(popup_1dd5be37412e4e80fb427b8dd4dd853d)
+        ;
+
+        
+    
+    
+            marker_49550ad306e2c32dfdcaf48f76727e91.bindTooltip(
+                `<div>
+                     7228323628
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_a1e0a81ef66d6a526b4ab2d3f89b1c71 = L.marker(
+                [31.18632254, 29.90036778],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_f37f6e02a76ab5eac376bae72204283b = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_535f68646421d578698a41433aec4192 = $(`<div id="html_535f68646421d578698a41433aec4192" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بازار حمو علاء</b><br>كود التاجر: 3058723392<br>114 شارع العمرى كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18632254,29.90036778&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_f37f6e02a76ab5eac376bae72204283b.setContent(html_535f68646421d578698a41433aec4192);
+            
+        
+
+        marker_a1e0a81ef66d6a526b4ab2d3f89b1c71.bindPopup(popup_f37f6e02a76ab5eac376bae72204283b)
+        ;
+
+        
+    
+    
+            marker_a1e0a81ef66d6a526b4ab2d3f89b1c71.bindTooltip(
+                `<div>
+                     3058723392
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_df1fad11f3db25915f1ec1979a7b4c92 = L.marker(
+                [31.18506166666667, 29.908306666666665],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_0f05b0a750f40c80be9d3a7b0fe55de0 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_6318ffe44124218194c0a4cae2a00bbc = $(`<div id="html_6318ffe44124218194c0a4cae2a00bbc" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>البان الشيخ</b><br>كود التاجر: 7918145134<br>24ش المزدلفة غربال محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18506166666667,29.908306666666665&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_0f05b0a750f40c80be9d3a7b0fe55de0.setContent(html_6318ffe44124218194c0a4cae2a00bbc);
+            
+        
+
+        marker_df1fad11f3db25915f1ec1979a7b4c92.bindPopup(popup_0f05b0a750f40c80be9d3a7b0fe55de0)
+        ;
+
+        
+    
+    
+            marker_df1fad11f3db25915f1ec1979a7b4c92.bindTooltip(
+                `<div>
+                     7918145134
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_49e4b83e27852912823ed7c16d64f202 = L.marker(
+                [31.06884088, 29.83058027],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_2dffcf30815c1d4aae7f9ef5db29c022 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_16cfc216eae5dd9b19025382e2dec05d = $(`<div id="html_16cfc216eae5dd9b19025382e2dec05d" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>سنترال اليوسف</b><br>كود التاجر: 4695721023<br>المدينة الجامعية مرغم<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.06884088,29.83058027&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_2dffcf30815c1d4aae7f9ef5db29c022.setContent(html_16cfc216eae5dd9b19025382e2dec05d);
+            
+        
+
+        marker_49e4b83e27852912823ed7c16d64f202.bindPopup(popup_2dffcf30815c1d4aae7f9ef5db29c022)
+        ;
+
+        
+    
+    
+            marker_49e4b83e27852912823ed7c16d64f202.bindTooltip(
+                `<div>
+                     4695721023
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_408f17583ec05a716d2db70d4c37a3e3 = L.marker(
+                [31.18622, 29.89833579],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_75c630f7ee2920449e015e439c7774c0 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_64dbc5265bae239b15219aee788fa103 = $(`<div id="html_64dbc5265bae239b15219aee788fa103" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>سنترال عباد الرحمن</b><br>كود التاجر: 8324193884<br>71 المازني البياصة كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18622,29.89833579&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_75c630f7ee2920449e015e439c7774c0.setContent(html_64dbc5265bae239b15219aee788fa103);
+            
+        
+
+        marker_408f17583ec05a716d2db70d4c37a3e3.bindPopup(popup_75c630f7ee2920449e015e439c7774c0)
+        ;
+
+        
+    
+    
+            marker_408f17583ec05a716d2db70d4c37a3e3.bindTooltip(
+                `<div>
+                     8324193884
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_9d6fc0a4a047cd9fe4378296ce653065 = L.marker(
+                [31.18786024, 29.90054514],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_918698be511c257caccc15e39d322f5a = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b4ec011e63f99387a938df05218360e7 = $(`<div id="html_b4ec011e63f99387a938df05218360e7" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بازار اسلام واسامة</b><br>كود التاجر: 9105904799<br>109 share ragib basha moharm bik<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18786024,29.90054514&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_918698be511c257caccc15e39d322f5a.setContent(html_b4ec011e63f99387a938df05218360e7);
+            
+        
+
+        marker_9d6fc0a4a047cd9fe4378296ce653065.bindPopup(popup_918698be511c257caccc15e39d322f5a)
+        ;
+
+        
+    
+    
+            marker_9d6fc0a4a047cd9fe4378296ce653065.bindTooltip(
+                `<div>
+                     9105904799
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_b212ec7eb49b863a5d89b6c1bb371de9 = L.marker(
+                [31.18499235, 29.89956481],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_3a85444f149087c06a98ddbb462ff888 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c30e3172387dd3e2ec573deabde7e250 = $(`<div id="html_c30e3172387dd3e2ec573deabde7e250" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ابو حاتم</b><br>كود التاجر: 7268063839<br>شارع النيل كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18499235,29.89956481&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_3a85444f149087c06a98ddbb462ff888.setContent(html_c30e3172387dd3e2ec573deabde7e250);
+            
+        
+
+        marker_b212ec7eb49b863a5d89b6c1bb371de9.bindPopup(popup_3a85444f149087c06a98ddbb462ff888)
+        ;
+
+        
+    
+    
+            marker_b212ec7eb49b863a5d89b6c1bb371de9.bindTooltip(
+                `<div>
+                     7268063839
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_2b76dd90e430c3fb91f13912caf88bde = L.marker(
+                [31.18291, 29.90559],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_2f4956174c389b65470492b8b1b366a3 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_d84bcc736adad31b366315d34f59830d = $(`<div id="html_d84bcc736adad31b366315d34f59830d" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>معرض المحبة</b><br>كود التاجر: 3977038920<br>شارع راغب باشا محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18291,29.90559&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_2f4956174c389b65470492b8b1b366a3.setContent(html_d84bcc736adad31b366315d34f59830d);
+            
+        
+
+        marker_2b76dd90e430c3fb91f13912caf88bde.bindPopup(popup_2f4956174c389b65470492b8b1b366a3)
+        ;
+
+        
+    
+    
+            marker_2b76dd90e430c3fb91f13912caf88bde.bindTooltip(
+                `<div>
+                     3977038920
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_3c298a2a86d2221719b5a283e7beab6d = L.marker(
+                [31.183347, 29.908796],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_51b5a9775c46a1a2f9e70f680a70654f = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_be134ecab924231dc37a0d8b33ada017 = $(`<div id="html_be134ecab924231dc37a0d8b33ada017" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>مكتبة السلام</b><br>كود التاجر: 5405529345<br>10 شارع شجرة الدر غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.183347,29.908796&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_51b5a9775c46a1a2f9e70f680a70654f.setContent(html_be134ecab924231dc37a0d8b33ada017);
+            
+        
+
+        marker_3c298a2a86d2221719b5a283e7beab6d.bindPopup(popup_51b5a9775c46a1a2f9e70f680a70654f)
+        ;
+
+        
+    
+    
+            marker_3c298a2a86d2221719b5a283e7beab6d.bindTooltip(
+                `<div>
+                     5405529345
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_ef96cb830a6579987f3485825a58a62f = L.marker(
+                [31.18870036, 29.90555759],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_c5c8da522d9fb977ea16f03e2087c0f5 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_2b5cd2f5c4085bb916519f6ecde6adff = $(`<div id="html_2b5cd2f5c4085bb916519f6ecde6adff" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ابو حودة</b><br>كود التاجر: 4214262117<br>٧ش الازرقي-الباب الجديد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18870036,29.90555759&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_c5c8da522d9fb977ea16f03e2087c0f5.setContent(html_2b5cd2f5c4085bb916519f6ecde6adff);
+            
+        
+
+        marker_ef96cb830a6579987f3485825a58a62f.bindPopup(popup_c5c8da522d9fb977ea16f03e2087c0f5)
+        ;
+
+        
+    
+    
+            marker_ef96cb830a6579987f3485825a58a62f.bindTooltip(
+                `<div>
+                     4214262117
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_3566bc6931c84be1e7a19d68ef482f67 = L.marker(
+                [31.18801912, 29.89945446],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_534391223245dde7ea487b014abf5476 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_4b8d1476a4cce271b91ad4401691c13a = $(`<div id="html_4b8d1476a4cce271b91ad4401691c13a" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>بازار وليد</b><br>كود التاجر: 4037005704<br>8 شارع النور كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.18801912,29.89945446&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_534391223245dde7ea487b014abf5476.setContent(html_4b8d1476a4cce271b91ad4401691c13a);
+            
+        
+
+        marker_3566bc6931c84be1e7a19d68ef482f67.bindPopup(popup_534391223245dde7ea487b014abf5476)
+        ;
+
+        
+    
+    
+            marker_3566bc6931c84be1e7a19d68ef482f67.bindTooltip(
+                `<div>
+                     4037005704
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_f88093217476f65aa474a10b176cb8d2 = L.marker(
+                [31.185758, 29.905611],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_ab8658f073b8818627eb1d1debc54113 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_b5c75a5bd2038e323b02fffe0b05d018 = $(`<div id="html_b5c75a5bd2038e323b02fffe0b05d018" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>فوزي</b><br>كود التاجر: 9768840586<br>١ش القمر غربال الباب الجديد<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.185758,29.905611&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_ab8658f073b8818627eb1d1debc54113.setContent(html_b5c75a5bd2038e323b02fffe0b05d018);
+            
+        
+
+        marker_f88093217476f65aa474a10b176cb8d2.bindPopup(popup_ab8658f073b8818627eb1d1debc54113)
+        ;
+
+        
+    
+    
+            marker_f88093217476f65aa474a10b176cb8d2.bindTooltip(
+                `<div>
+                     9768840586
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_65e6fe6594dfdcb51470dd72b47fac9b = L.marker(
+                [31.188313333333333, 29.905661666666667],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_2d1a6a0a7977f7215011efc7ba421765 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_500da77ec8c7cc3b6507cc21747d6776 = $(`<div id="html_500da77ec8c7cc3b6507cc21747d6776" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>ماركت عباد الرحمن</b><br>كود التاجر: 7551023037<br>شارع الأزرقى الباب الجديد محرم بك<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.188313333333333,29.905661666666667&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_2d1a6a0a7977f7215011efc7ba421765.setContent(html_500da77ec8c7cc3b6507cc21747d6776);
+            
+        
+
+        marker_65e6fe6594dfdcb51470dd72b47fac9b.bindPopup(popup_2d1a6a0a7977f7215011efc7ba421765)
+        ;
+
+        
+    
+    
+            marker_65e6fe6594dfdcb51470dd72b47fac9b.bindTooltip(
+                `<div>
+                     7551023037
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_9904cb543bd969976452c227d91a28b7 = L.marker(
+                [31.186025000000004, 29.90767],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_be03a86784ad5a7550171b3dde86cb2f = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_705420702160798b44b7445eb6287b66 = $(`<div id="html_705420702160798b44b7445eb6287b66" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>عباد الرحمن غربال</b><br>كود التاجر: 2923326653<br>شارع شجرة الدر غربال<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.186025000000004,29.90767&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_be03a86784ad5a7550171b3dde86cb2f.setContent(html_705420702160798b44b7445eb6287b66);
+            
+        
+
+        marker_9904cb543bd969976452c227d91a28b7.bindPopup(popup_be03a86784ad5a7550171b3dde86cb2f)
+        ;
+
+        
+    
+    
+            marker_9904cb543bd969976452c227d91a28b7.bindTooltip(
+                `<div>
+                     2923326653
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            var marker_7d2bf76cbf360317368856ef47c3439b = L.marker(
+                [31.186873, 29.898891],
+                {
+}
+            ).addTo(marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9);
+        
+    
+        var popup_6c3857ec98b38acc72ac815155857d15 = L.popup({
+  "maxWidth": 320,
+});
+
+        
+            
+                var html_c5597c23e598be0e469fc44bb80e8e55 = $(`<div id="html_c5597c23e598be0e469fc44bb80e8e55" style="width: 100.0%; height: 100.0%;"><div dir='rtl' style='min-width:190px;font-family:Arial'><b>الروضة</b><br>كود التاجر: 6316835663<br>دوران البياصة كرموز<br><a target='_blank' rel='noopener' href='https://www.google.com/maps/dir/?api=1&destination=31.186873,29.898891&travelmode=driving'>الاتجاهات عبر Google Maps</a></div></div>`)[0];
+                popup_6c3857ec98b38acc72ac815155857d15.setContent(html_c5597c23e598be0e469fc44bb80e8e55);
+            
+        
+
+        marker_7d2bf76cbf360317368856ef47c3439b.bindPopup(popup_6c3857ec98b38acc72ac815155857d15)
+        ;
+
+        
+    
+    
+            marker_7d2bf76cbf360317368856ef47c3439b.bindTooltip(
+                `<div>
+                     6316835663
+                 </div>`,
+                {
+  "sticky": true,
+}
+            );
+        
+    
+            marker_cluster_6220f4ab6ef6f8b0e829f31df92312f9.addTo(map_1dc9c3985caf677f5b91550906c5547e);
+        
+    
+            map_1dc9c3985caf677f5b91550906c5547e.fitBounds(
+                [[30.000083, 29.723018333333336], [31.196171666666668, 30.999564]],
+                {}
+            );
+        
+</script>
+</html>
